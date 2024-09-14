@@ -1,0 +1,23 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '11.0'
+
+target 'sone' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for sone
+  pod 'React', :path => '../node_modules/react-native/'
+
+  # Additional React Native dependencies
+  pod 'React-Core', :path => '../node_modules/react-native/React'
+  pod 'React-RCTActionSheet', :path => '../node_modules/react-native/Libraries/ActionSheet'
+  pod 'React-RCTAnimation', :path => '../node_modules/react-native/Libraries/Animation'
+  pod 'React-RCTImage', :path => '../node_modules/react-native/Libraries/Image'
+  pod 'React-RCTLinking', :path => '../node_modules/react-native/Libraries/LinkingIOS'
+  pod 'React-RCTNetwork', :path => '../node_modules/react-native/Libraries/Network'
+  pod 'React-RCTSettings', :path => '../node_modules/react-native/Libraries/Settings'
+  pod 'React-RCTText', :path => '../node_modules/react-native/Libraries/Text'
+  pod 'React-RCTVibration', :path => '../node_modules/react-native/Libraries/Vibration'
+  pod 'React-RCTWebSocket', :path => '../node_modules/react-native/Libraries/WebSocket'
+
+end
