@@ -1,50 +1,28 @@
-# Welcome to your Expo app 👋
+# Sone: Eye-Tracking Communication for Patients
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Sone is a React Native application that facilitates seamless communication for patients with limited mobility. This app allows patients to send notifications to nursing staff by selecting predefined options like "I need water" or "I'm in pain" using their eye movements, triggering push notifications on hospital staff’s mobile devices.
 
-## Get started
+The goal is to reduce reliance on manual checks and improve communication between patients and caregivers, particularly for those who are physically disabled or nonverbal.
 
-1. Install dependencies
+## Features
 
-   ```bash
-   npm install
-   ```
+- **Eye-Tracking for Icon Selection**: Patients interact with the app using built-in eye-tracking technology to select different communication options.
+- **Push Notifications**: Button selections trigger push notifications.
+- **Cross-Platform**: Available for both iPad (iOS) and Android tablets.
+- **Real-Time Communication**: Notifications are sent in real-time to ensure swift responses from nursing staff.
 
-2. Start the app
+## Tech Stack
 
-   ```bash
-    npx expo start
-   ```
+- **React Native**: For building cross-platform mobile applications.
+- **Firebase Cloud Messaging (FCM)**: For push notification delivery.
+- **Expo**: For building and testing the application.
+- **iOS Eye-Tracking**: Apple’s beta eye-tracking to track patient’s gaze and allow them to interact with UI elements.
+- **JavaScript/TypeScript**: Primary programming languages used in the project.
+- **Node.js**: Backend infrastructure for managing real-time events and handling notifications.
+- **Firebase Realtime Database**: For tracking and managing patient requests.
 
-In the output, you'll find options to open the app in a
+## How It Works
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. **Eye-Tracking Input**: The app leverages iOS's native eye-tracking functionality (available for iPads) to detect when a patient focuses on a specific icon (e.g., "I'm in pain," "I need water").
+2. **Button Press and Notification**: When an icon is selected, the app triggers a push notification via Firebase Cloud Messaging (FCM), which is sent to the nurse's mobile device.
+3. **Notification on Nurse's Device**: The nurse receives the notification, allowing them to take appropriate action based on the patient's needs.
