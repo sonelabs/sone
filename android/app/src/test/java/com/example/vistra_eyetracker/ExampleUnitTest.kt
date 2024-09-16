@@ -1,4 +1,4 @@
-package com.example.vistra_eyetracker
+package com.example.sone_eyetracker
 
 import org.junit.Test
 

@@ -1,9 +1,9 @@
-package com.example.vistra_eyetracker
+package com.example.sone_eyetracker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
-import com.example.vistra_eyetracker.databinding.ActivityMainBinding
+import com.example.sone_eyetracker.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,15 +20,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * A native method that is implemented by the 'vistra_eyetracker' native library,
+     * A native method that is implemented by the 'sone_eyetracker' native library,
      * which is packaged with this application.
      */
     private external fun stringFromJNI(): String
 
     companion object {
-        // Used to load the 'vistra_eyetracker' library on application startup.
+        // Used to load the 'sone_eyetracker' library on application startup.
         init {
-            System.loadLibrary("vistra_eyetracker")
+            System.loadLibrary("sone_eyetracker")
         }
     }
 }
