@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1, // Fill the entire height of the container
-    padding: 16,
+    padding: 5,
   },
   alertIcon: {
     width: 150,
