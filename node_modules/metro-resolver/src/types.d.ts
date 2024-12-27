@@ -74,8 +74,15 @@ export interface PackageForModule extends PackageInfo {
  * Check existence of a single file.
  */
 export type DoesFileExist = (filePath: string) => boolean;
-export type GetRealPath = (path: string) => string | null;
 export type IsAssetFile = (fileName: string) => boolean;
+/**
+ * Performs a lookup against an absolute or project-relative path to determine
+ * whether it exists as a file or directory. Follows any symlinks, and returns
+ * a real absolute path on existence.
+ */
+export type FileSystemLookup = (
+  absoluteOrProjectRelativePath: string,
+) => {exists: false} | {exists: true; type: 'f' | 'd'; realPath: string};
 
 /**
  * Given a directory path and the base asset name, return a list of all the
@@ -94,6 +101,12 @@ export interface ResolutionContext {
   readonly allowHaste: boolean;
   readonly customResolverOptions: CustomResolverOptions;
   readonly disableHierarchicalLookup: boolean;
+
+  /**
+   * Determine whether a regular file exists at the given path.
+   *
+   * @deprecated, prefer `fileSystemLookup`
+   */
   readonly doesFileExist: DoesFileExist;
   readonly extraNodeModules?: {[key: string]: string};
 
@@ -119,6 +132,13 @@ export interface ResolutionContext {
    * and may not be used for resolution purposes.
    */
   readonly dependency?: TransformResultDependency;
+
+  /**
+   * Synchonously returns information about a given absolute path, including
+   * whether it exists, whether it is a file or directory, and its absolute
+   * real path.
+   */
+  readonly fileSystemLookup: FileSystemLookup;
 
   /**
    * The ordered list of fields to read in `package.json` to resolve a main
@@ -158,7 +178,6 @@ export interface ResolutionContext {
     [platform: string]: ReadonlyArray<string>;
   }>;
   unstable_enablePackageExports: boolean;
-  unstable_getRealPath?: GetRealPath | null;
   unstable_logWarning: (message: string) => void;
 }
 

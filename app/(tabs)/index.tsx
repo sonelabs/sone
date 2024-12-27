@@ -8,7 +8,7 @@ Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: false,
+    shouldSetBadge: true,
   }),
 });
 
@@ -51,7 +51,7 @@ async function sendNotification(title, body) {
 // Function to make a phone call
 async function makePhoneCall() {
   // Play sound
-  await playSound(require('./call-sound.mp3'));
+  await playSound(require('../../assets/sounds/call-sound.mp3'));
 
   // Send notification
   await sendNotification('Calling', 'Initiating phone call...');
@@ -78,25 +78,25 @@ export default function App() {
     <View style={styles.container}>
       {/* Sidebar as the Call Button */}
       <TouchableOpacity style={styles.sidebar} onPress={makePhoneCall}>
-        <Image source={require('./alert-icon.png')} style={styles.alertIcon} />
+        <Image source={require('../../assets/images/alert-icon.png')} style={styles.alertIcon} />
         <Text style={styles.alertButtonText}>Call</Text>
       </TouchableOpacity>
       
       {/* Main Grid */}
       <View style={styles.gridContainer}>
-        {renderGridButton('Ice', require('./ice-icon.png'), require('./ice-sound.mp3'), 'Ice', 'Ice button was clicked!')}
-        {renderGridButton('Food', require('./food-icon.png'), require('./food-sound.mp3'), 'Food', 'Food button was clicked!')}
-        {renderGridButton('Water', require('./water-icon.png'), require('./water-sound.mp3'), 'Water', 'Water button was clicked!')}
-        {renderGridButton('Medication', require('./med-icon.png'), require('./med-sound.mp3'), 'Medication', 'Medication button was clicked!')}
-        {renderGridButton('Bathroom', require('./toilet-icon.png'), require('./toilet-sound.mp3'), 'Bathroom', 'Bathroom button was clicked!')}
-        {renderGridButton('Lights', require('./light-icon.png'), require('./light-sound.mp3'), 'Lights', 'Lights button was clicked!')}
+        {renderGridButton('Ice', require('../../assets/images/ice-icon.png'), require('../../assets/sounds/ice-sound.mp3'), 'Ice', 'Ice button was clicked!')}
+        {renderGridButton('Food', require('../../assets/images/food-icon.png'), require('../../assets/sounds/food-sound.mp3'), 'Food', 'Food button was clicked!')}
+        {renderGridButton('Water', require('../../assets/images/water-icon.png'), require('../../assets/sounds/water-sound.mp3'), 'Water', 'Water button was clicked!')}
+        {renderGridButton('Medication', require('../../assets/images/med-icon.png'), require('../../assets/sounds/med-sound.mp3'), 'Medication', 'Medication button was clicked!')}
+        {renderGridButton('Bathroom', require('../../assets/images/toilet-icon.png'), require('../../assets/sounds/toilet-sound.mp3'), 'Bathroom', 'Bathroom button was clicked!')}
+        {renderGridButton('Lights', require('../../assets/images/light-icon.png'), require('../../assets/sounds/light-sound.mp3'), 'Lights', 'Lights button was clicked!')}
       </View>
     </View>
   );
 }
 
 // Helper function to render grid buttons
-function renderGridButton(label, iconSource, soundFile, notificationTitle, notificationBody, onPress) {
+function renderGridButton(label, iconSource, soundFile, notificationTitle, notificationBody) {
   return (
     <TouchableOpacity
       style={styles.gridButton}
@@ -105,8 +105,6 @@ function renderGridButton(label, iconSource, soundFile, notificationTitle, notif
         await playSound(soundFile);
         // Send notification
         await sendNotification(notificationTitle, notificationBody);
-        // Call the onPress function if provided
-        if (onPress) onPress();
       }}
     >
       <Image source={iconSource} style={styles.icon} />

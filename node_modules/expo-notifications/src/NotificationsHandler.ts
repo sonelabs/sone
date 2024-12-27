@@ -1,4 +1,9 @@
-import { EventEmitter, Subscription, CodedError, UnavailabilityError } from 'expo-modules-core';
+import {
+  LegacyEventEmitter,
+  type EventSubscription,
+  CodedError,
+  UnavailabilityError,
+} from 'expo-modules-core';
 
 import { Notification, NotificationBehavior } from './Notifications.types';
 import NotificationsHandlerModule from './NotificationsHandlerModule';
@@ -30,7 +35,7 @@ export interface NotificationHandler {
    */
   handleSuccess?: (notificationId: string) => void;
   /**
-   * A function called whenever handling of an incoming notification fails.
+   * A function called whenever calling `handleNotification()` for an incoming notification fails.
    * @param notificationId Identifier of the notification.
    * @param error An error which occurred in form of `NotificationHandlingError` object.
    */
@@ -45,13 +50,13 @@ type HandleNotificationEvent = {
 type HandleNotificationTimeoutEvent = HandleNotificationEvent;
 
 // Web uses SyntheticEventEmitter
-const notificationEmitter = new EventEmitter(NotificationsHandlerModule);
+const notificationEmitter = new LegacyEventEmitter(NotificationsHandlerModule);
 
 const handleNotificationEventName = 'onHandleNotification';
 const handleNotificationTimeoutEventName = 'onHandleNotificationTimeout';
 
-let handleSubscription: Subscription | null = null;
-let handleTimeoutSubscription: Subscription | null = null;
+let handleSubscription: EventSubscription | null = null;
+let handleTimeoutSubscription: EventSubscription | null = null;
 
 /**
  * When a notification is received while the app is running, using this function you can set a callback that will decide
