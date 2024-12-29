@@ -87,6 +87,8 @@ class Transformer {
       type,
       unstable_disableES6Transforms,
       unstable_transformProfile,
+      unstable_memoizeInlineRequires,
+      unstable_nonMemoizedInlineRequires,
       ...extra
     } = transformerOptions;
 
@@ -121,6 +123,8 @@ class Transformer {
       platform,
       type,
       unstable_disableES6Transforms,
+      unstable_memoizeInlineRequires,
+      unstable_nonMemoizedInlineRequires,
       unstable_transformProfile,
     ]);
 
@@ -184,9 +188,8 @@ class Transformer {
     };
   }
 
-  end(): void {
-    // $FlowFixMe[unused-promise]
-    this._workerFarm.kill();
+  async end(): Promise<void> {
+    await this._workerFarm.kill();
   }
 }
 

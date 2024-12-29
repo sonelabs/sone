@@ -116,11 +116,6 @@ function createInlinePlatformChecks(
       isWrappedModule,
     );
 
-  // $FlowFixMe[deprecated-type]
-  function isGlobal(binding: mixed): boolean %checks {
-    return !binding;
-  }
-
   const isRequireCall = (
     node: BabelNodeExpression,
     dependencyId: string,
@@ -163,7 +158,6 @@ function createInlinePlatformChecks(
     args: Array<
       | BabelNodeExpression
       | BabelNodeSpreadElement
-      | BabelNodeJSXNamespacedName
       | BabelNodeArgumentPlaceholder,
     >,
     dependencyId: string,
@@ -181,7 +175,7 @@ function createInlinePlatformChecks(
     binding: void | $FlowFixMe,
     isWrappedModule: boolean,
   ): boolean =>
-    isGlobal(binding) ||
+    !binding ||
     !binding.scope.parent ||
     (isWrappedModule && !binding.scope.parent.parent);
 

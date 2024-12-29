@@ -27,12 +27,14 @@ import type {Type} from 'metro-transform-worker';
 import {getContextModuleTemplate} from './contextModuleTemplates';
 import isAssetFile from 'metro-resolver/src/utils/isAssetFile';
 
-type InlineRequiresRaw = {+blockList: {[string]: true, ...}, ...} | boolean;
+type InlineRequiresRaw =
+  | $ReadOnly<{blockList: $ReadOnly<{[string]: true, ...}>, ...}>
+  | boolean;
 
-type TransformOptionsWithRawInlines = {
+type TransformOptionsWithRawInlines = $ReadOnly<{
   ...TransformOptions,
-  +inlineRequires: InlineRequiresRaw,
-};
+  inlineRequires: InlineRequiresRaw,
+}>;
 
 const baseIgnoredInlineRequires = [
   'React',
@@ -114,6 +116,10 @@ async function calcTransformerOptions(
     experimentalImportSupport: transform?.experimentalImportSupport || false,
     unstable_disableES6Transforms:
       transform?.unstable_disableES6Transforms || false,
+    unstable_memoizeInlineRequires:
+      transform?.unstable_memoizeInlineRequires || false,
+    unstable_nonMemoizedInlineRequires:
+      transform?.unstable_nonMemoizedInlineRequires || [],
     nonInlinedRequires:
       transform?.nonInlinedRequires || baseIgnoredInlineRequires,
     type: 'module',

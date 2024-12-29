@@ -40,7 +40,6 @@ const getDefaultValues = (projectRoot: ?string): ConfigT => ({
     blockList: exclusionList(),
     dependencyExtractor: undefined,
     disableHierarchicalLookup: false,
-    unstable_enableSymlinks: true,
     emptyModulePath: require.resolve(
       'metro-runtime/src/modules/empty-module.js',
     ),
@@ -137,6 +136,7 @@ const getDefaultValues = (projectRoot: ?string): ConfigT => ({
     unstable_disableNormalizePseudoGlobals: false,
     unstable_renameRequire: true,
     unstable_compactOutput: false,
+    unstable_memoizeInlineRequires: false,
     unstable_workerThreads: false,
   },
   watcher: {
