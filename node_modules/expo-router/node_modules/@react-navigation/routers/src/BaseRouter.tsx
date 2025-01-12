@@ -10,7 +10,7 @@ import type {
  * Base router object that can be used when writing custom routers.
  * This provides few helper methods to handle common actions such as `RESET`.
  */
-export const BaseRouter = {
+const BaseRouter = {
   getStateForAction<State extends NavigationState>(
     state: State,
     action: CommonNavigationAction
@@ -74,6 +74,8 @@ export const BaseRouter = {
   },
 
   shouldActionChangeFocus(action: CommonNavigationAction) {
-    return action.type === 'NAVIGATE' || action.type === 'NAVIGATE_DEPRECATED';
+    return action.type === 'NAVIGATE';
   },
 };
+
+export default BaseRouter;

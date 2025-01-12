@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "sone",
-    "slug": "sone",
+    "slug": "vistra-app",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
@@ -22,7 +22,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sleepybendi.vistraapp"
     },
     "web": {
       "bundler": "metro",

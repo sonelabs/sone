@@ -5,7 +5,7 @@ import type {
 import * as React from 'react';
 import { BackHandler } from 'react-native';
 
-export function useBackButton(
+export default function useBackButton(
   ref: React.RefObject<NavigationContainerRef<ParamListBase>>
 ) {
   React.useEffect(() => {
