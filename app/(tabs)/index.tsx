@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { Audio } from 'expo-av'; // Import Audio from expo-av
+import { Audio } from 'expo-av';
+import { Ionicons  } from '@expo/vector-icons';
 
-// Notification behavior settings
+// notification handler settings
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -12,7 +13,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// Register for push notifications
+// helper functions to register push notifications
 async function registerForPushNotificationsAsync() {
   const { status } = await Notifications.requestPermissionsAsync();
   console.log('Notification permission status:', status);
@@ -31,79 +32,139 @@ async function registerForPushNotificationsAsync() {
   }
 }
 
-// Function to play sound
 async function playSound(soundFile) {
   const { sound } = await Audio.Sound.createAsync(soundFile);
   await sound.playAsync();
 }
 
-// Function to send a notification
 async function sendNotification(title, body) {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: title,
       body: body,
     },
-    trigger: null, // Send immediately
+    trigger: null,
   });
 }
 
-// Function to make a phone call
 async function makePhoneCall() {
-  // Play sound
   await playSound(require('@/assets/sounds/call-sound.mp3'));
-
-  // Send notification
   await sendNotification('Calling', 'Initiating phone call...');
 
-  let phoneNumber = '';
-  if (Platform.OS === 'android') {
-    phoneNumber = 'tel:2024031545'; // Replace with the phone number you want to call
-  } else {
-    phoneNumber = 'telprompt:2024031545'; // Use 'telprompt:' for iOS
-  }
-
-  // Delay slightly to let the sound play before opening the dialer
+  let phoneNumber = Platform.OS === 'android' ? 'tel:2024031545' : 'telprompt:2024031545';
+  
   setTimeout(() => {
     Linking.openURL(phoneNumber).catch(err => console.error('Failed to make a call:', err));
   }, 500);
 }
 
+// main app component
 export default function App() {
+  const [isRecording, setIsRecording] = useState(false);
+  const [recording, setRecording] = useState(null);
+
   useEffect(() => {
     registerForPushNotificationsAsync();
   }, []);
 
+  async function startRecording() {
+    try {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(recording);
+      setIsRecording(true);
+    } catch (err) {
+      console.error('Failed to start recording', err);
+    }
+  }
+
+  async function stopRecording() {
+    try {
+      await recording.stopAndUnloadAsync();
+      const uri = recording.getURI();
+      setIsRecording(false);
+      console.log('Recording saved at:', uri);
+      setRecording(null);
+      await sendNotification('Message Recorded', 'Custom message has been saved');
+      playRecording(uri);
+    } catch (err) {
+      console.error('Failed to stop recording', err);
+    }
+  }
+
+  async function playRecording(uri) {
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri });
+      await sound.playAsync();
+    } catch (err) {
+      console.error('Error playing back recording:', err);
+    }
+  }
+
+  const handleMessagePress = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   return (
     <View style={styles.container}>
-      {/* Sidebar as the Call Button */}
+      {/* Sidebar */}
       <TouchableOpacity style={styles.sidebar} onPress={makePhoneCall}>
         <Image source={require('@/assets/images/alert-icon.png')} style={styles.alertIcon} />
         <Text style={styles.alertButtonText}>Call</Text>
       </TouchableOpacity>
       
-      {/* Main Grid */}
-      <View style={styles.gridContainer}>
-        {renderGridButton('Ice', require('@/assets/images/ice-icon.png'), require('@/assets/sounds/ice-sound.mp3'), 'Ice', 'Ice button was clicked!')}
-        {renderGridButton('Food', require('@/assets/images/food-icon.png'), require('@/assets/sounds/food-sound.mp3'), 'Food', 'Food button was clicked!')}
-        {renderGridButton('Water', require('@/assets/images/water-icon.png'), require('@/assets/sounds/water-sound.mp3'), 'Water', 'Water button was clicked!')}
-        {renderGridButton('Medication', require('@/assets/images/med-icon.png'), require('@/assets/sounds/med-sound.mp3'), 'Medication', 'Medication button was clicked!')}
-        {renderGridButton('Bathroom', require('@/assets/images/toilet-icon.png'), require('@/assets/sounds/toilet-sound.mp3'), 'Bathroom', 'Bathroom button was clicked!')}
-        {renderGridButton('Lights', require('@/assets/images/light-icon.png'), require('@/assets/sounds/light-sound.mp3'), 'Lights', 'Lights button was clicked!')}
+      {/* Main content container */}
+      <View style={styles.mainContent}>
+        {/* Grid Container */}
+        <View style={styles.gridContainer}>
+          {renderGridButton('Ice', require('@/assets/images/ice-icon.png'), require('@/assets/sounds/ice-sound.mp3'), 'Ice', 'Ice button was clicked!')}
+          {renderGridButton('Food', require('@/assets/images/food-icon.png'), require('@/assets/sounds/food-sound.mp3'), 'Food', 'Food button was clicked!')}
+          {renderGridButton('Water', require('@/assets/images/water-icon.png'), require('@/assets/sounds/water-sound.mp3'), 'Water', 'Water button was clicked!')}
+          {renderGridButton('Medication', require('@/assets/images/med-icon.png'), require('@/assets/sounds/med-sound.mp3'), 'Medication', 'Medication button was clicked!')}
+          {renderGridButton('Bathroom', require('@/assets/images/toilet-icon.png'), require('@/assets/sounds/toilet-sound.mp3'), 'Bathroom', 'Bathroom button was clicked!')}
+          {renderGridButton('Lights', require('@/assets/images/light-icon.png'), require('@/assets/sounds/light-sound.mp3'), 'Lights', 'Lights button was clicked!')}
+        </View>
+
+        {/* Message Bar */}
+        <TouchableOpacity 
+          style={[styles.messageBar, isRecording && styles.messageBarRecording]} 
+          onPress={handleMessagePress}
+        >
+          <View style={styles.messageBarContent}>
+            <Ionicons
+              name={isRecording ? "mic" : "mic-outline"}
+              size={24}
+              color={isRecording ? "#FF0000" : "#000000"}
+              style={styles.micIcon}
+            />
+            <Text style={styles.messageBarText}>
+              {isRecording ? 'Recording...' : 'Custom Message'}
+            </Text>
+          </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-// Helper function to render grid buttons
+// Helper function for grid buttons remains the same
 function renderGridButton(label, iconSource, soundFile, notificationTitle, notificationBody) {
   return (
     <TouchableOpacity
       style={styles.gridButton}
       onPress={async () => {
-        // Play sound
         await playSound(soundFile);
-        // Send notification
         await sendNotification(notificationTitle, notificationBody);
       }}
     >
@@ -118,12 +179,16 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
   },
+  mainContent: {
+    flex: 4,
+    backgroundColor: '#121212',
+  },
   sidebar: {
     width: '20%',
-    backgroundColor: '#D32F2F', // Red background for sidebar
+    backgroundColor: '#D32F2F',
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1, // Fill the entire height of the container
+    flex: 1,
     padding: 5,
   },
   alertIcon: {
@@ -133,26 +198,25 @@ const styles = StyleSheet.create({
   },
   alertButtonText: {
     fontSize: 30,
-    color: '#FFF', // White text for contrast
+    color: '#FFF',
     fontWeight: 'bold',
   },
   gridContainer: {
-    flex: 4, // Adjust to fill the remaining space
+    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
     paddingTop: 90,
-    backgroundColor: '#121212', // Dark background for the main area
   },
   gridButton: {
-    backgroundColor: '#F5F5F5', // Light grey background for buttons
-    width: '26%', // Set width to 26% of the container
-    aspectRatio: 1, // This ensures the button is a square
+    backgroundColor: '#F5F5F5',
+    width: '26%',
+    aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 30, // Margin to space out buttons
+    margin: 30,
     borderRadius: 10,
   },
   icon: {
@@ -163,6 +227,31 @@ const styles = StyleSheet.create({
   gridButtonText: {
     fontSize: 30,
     color: '#000',
+    marginRight: 10,
+  },
+  messageBar: {
+    backgroundColor: '#FFFFFF',
+    height: 90,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+  },
+  messageBarContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+  },
+  messageBarRecording: {
+    // backgroundColor: '#FF8A80', // change color of entire button when recording
+  },
+  messageBarText: {
+    fontSize: 32,
+    color: '#000000',
+    fontWeight: '500',
+  },
+  micIcon: {
+    fontSize: 45,
     marginRight: 10,
   },
 });
