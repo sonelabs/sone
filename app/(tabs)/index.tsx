@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
   },
   messageBarRecording: {
-    backgroundColor: '#FFE0E0',
+    backgroundColor: '#FFE0E0', // change color of entire button when recording
   },
   messageBarText: {
     fontSize: 32,
