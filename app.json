@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "vistra-app",
-    "slug": "vistra-app",
+    "name": "sone",
+    "slug": "sone",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
