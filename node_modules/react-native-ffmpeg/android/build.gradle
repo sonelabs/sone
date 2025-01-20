@@ -1,0 +1,51 @@
+static String safePackageName(String prop) {
+    prop.replace("-lts", "")
+}
+
+static String safePackageVersion(String prop, String version, String ltsVersion) {
+    prop.contains("-lts") ? ltsVersion + ".LTS" : version
+}
+
+String safeExtGet(String prop, String fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+apply plugin: 'com.android.library'
+
+buildscript {
+    repositories {
+        jcenter()
+        maven { url 'https://maven.google.com' }
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+    }
+}
+
+android {
+    compileSdkVersion 29
+
+    defaultConfig {
+        minSdkVersion safeExtGet('reactNativeFFmpegPackage', 'https').contains("-lts") ? 16 : 24
+        targetSdkVersion 29
+        versionCode 52
+        versionName "0.5.2"
+        project.archivesBaseName = "react-native-ffmpeg"
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+repositories {
+    maven { url "$rootDir/node_modules/react-native/android" }
+    mavenCentral()
+    jcenter()
+    maven { url 'https://maven.google.com' }
+}
+
+dependencies {
+    implementation 'com.arthenica:mobile-ffmpeg-' + safePackageName(safeExtGet('reactNativeFFmpegPackage', 'https')) + ':' + safePackageVersion(safeExtGet('reactNativeFFmpegPackage', 'https'), safeExtGet('mobileFFmpegVersion', '4.4'), safeExtGet('mobileFFmpegVersion', '4.4'))
+    implementation 'com.facebook.react:react-native:+'
+}
