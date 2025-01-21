@@ -1,12 +1,13 @@
 {
   "expo": {
-    "name": "sone",
-    "slug": "sone",
+    "name": "vistra-app",
+    "slug": "vistra-app",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -16,9 +17,11 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.SONE.SONETabletApp"
     },
     "android": {
+      "package": "com.SONE.SONETabletApp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

@@ -4,3 +4,9 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+.env
+
+eas.json
+
+config.ts

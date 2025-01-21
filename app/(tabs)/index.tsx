@@ -2,18 +2,42 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, Linking } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { Audio } from 'expo-av';
-import { Ionicons  } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import 'react-native-get-random-values';
+import { processSpeechToText } from '@/services/azureSpeech';
 
-// notification handler settings
+const recordingOptions = {
+  android: {
+    extension: '.wav',
+    outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_PCM,
+    audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_DEFAULT,
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    bitRate: 16000,
+    linearPCM: true
+  },
+  ios: {
+    extension: '.wav',
+    audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+    sampleRate: 16000,
+    numberOfChannels: 1,
+    bitRate: 16000,
+    linearPCM: true,
+    linearPCMBitDepth: 16,
+    linearPCMIsBigEndian: false,
+    linearPCMIsFloat: false,
+  },
+};
+
+// Notification handler settings
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: true,
+    shouldSetBadge: false,
   }),
 });
 
-// helper functions to register push notifications
 async function registerForPushNotificationsAsync() {
   const { status } = await Notifications.requestPermissionsAsync();
   console.log('Notification permission status:', status);
@@ -58,10 +82,11 @@ async function makePhoneCall() {
   }, 500);
 }
 
-// main app component
 export default function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState(null);
+  const [transcription, setTranscription] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     registerForPushNotificationsAsync();
@@ -69,33 +94,53 @@ export default function App() {
 
   async function startRecording() {
     try {
-      await Audio.requestPermissionsAsync();
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to record audio is required.');
+        return;
+      }
+
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: true,
         playsInSilentModeIOS: true,
       });
 
-      const { recording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
+      const { recording } = await Audio.Recording.createAsync(recordingOptions);
       setRecording(recording);
       setIsRecording(true);
     } catch (err) {
       console.error('Failed to start recording', err);
+      alert('Failed to start recording. Please try again.');
     }
   }
 
   async function stopRecording() {
     try {
+      if (!recording) return;
+
+      setIsProcessing(true);
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       setIsRecording(false);
       console.log('Recording saved at:', uri);
+      
+      // Play the recording back
+      await playRecording(uri);
       setRecording(null);
-      await sendNotification('Message Recorded', 'Custom message has been saved');
-      playRecording(uri);
+      
+      await sendNotification('Message Recorded', 'Processing speech-to-text...');
+      
+      // Process the audio
+      const text = await processSpeechToText(uri);
+      setTranscription(text);
+      
+      // Send notification with transcribed text
+      await sendNotification('New Message', text);
     } catch (err) {
-      console.error('Failed to stop recording', err);
+      console.error('Error processing recording:', err);
+      alert('Failed to process recording. Please try again.');
+    } finally {
+      setIsProcessing(false);
     }
   }
 
@@ -136,10 +181,18 @@ export default function App() {
           {renderGridButton('Lights', require('@/assets/images/light-icon.png'), require('@/assets/sounds/light-sound.mp3'), 'Lights', 'Lights button was clicked!')}
         </View>
 
+        {/* Transcription Display */}
+        <View style={styles.transcriptionContainer}>
+          <Text style={styles.transcriptionText}>
+            {isProcessing ? 'Processing...' : transcription || 'No transcription yet'}
+          </Text>
+        </View>
+
         {/* Message Bar */}
         <TouchableOpacity 
           style={[styles.messageBar, isRecording && styles.messageBarRecording]} 
           onPress={handleMessagePress}
+          disabled={isProcessing}
         >
           <View style={styles.messageBarContent}>
             <Ionicons
@@ -149,7 +202,7 @@ export default function App() {
               style={styles.micIcon}
             />
             <Text style={styles.messageBarText}>
-              {isRecording ? 'Recording...' : 'Custom Message'}
+              {isProcessing ? 'Processing...' : isRecording ? 'Recording...' : 'Custom Message'}
             </Text>
           </View>
         </TouchableOpacity>
@@ -158,7 +211,6 @@ export default function App() {
   );
 }
 
-// Helper function for grid buttons remains the same
 function renderGridButton(label, iconSource, soundFile, notificationTitle, notificationBody) {
   return (
     <TouchableOpacity
@@ -243,7 +295,7 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
   },
   messageBarRecording: {
-    // backgroundColor: '#FF8A80', // change color of entire button when recording
+    backgroundColor: '#FFE0E0', // change color of entire button when recording
   },
   messageBarText: {
     fontSize: 32,
@@ -253,5 +305,16 @@ const styles = StyleSheet.create({
   micIcon: {
     fontSize: 45,
     marginRight: 10,
+  },
+  transcriptionContainer: {
+    margin: 20,
+    padding: 16,
+    backgroundColor: '#f4f4f4',
+    borderRadius: 10,
+  },
+  transcriptionText: {
+    fontSize: 18,
+    color: '#333',
+    fontWeight: '400',
   },
 });
