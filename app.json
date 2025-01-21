@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "sone",
-    "slug": "sone",
+    "name": "vistra-app",
+    "slug": "vistra-app",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "sone-tablet-app",
+    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
