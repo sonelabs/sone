@@ -1,133 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Platform, Linking } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import { Audio } from 'expo-av';
-import { Ionicons } from '@expo/vector-icons';
 import 'react-native-get-random-values';
-import { processSpeechToText } from '@/services/azureSpeech';
-
-const TARGET_PUSH_TOKEN = 'ExponentPushToken[wG11nVHQOvOwCQNs05hSj6]';
-
-// Function to send push notification to specific device
-async function sendPushNotification(title, body) {
-  const message = {
-    to: TARGET_PUSH_TOKEN,
-    sound: 'default',
-    title: title,
-    body: body,
-    data: { 
-      timestamp: new Date().toISOString() 
-    },
-  };
-
-  try {
-    const response = await fetch('https://exp.host/--/api/v2/push/send', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-encoding': 'gzip, deflate',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(message),
-    });
-
-    const result = await response.json();
-    console.log('Push notification sent:', result);
-  } catch (error) {
-    console.error('Error sending push notification:', error);
-  }
-}
-
-const recordingOptions = {
-  android: {
-    extension: '.wav',
-    outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_PCM,
-    audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_DEFAULT,
-    sampleRate: 16000,
-    numberOfChannels: 1,
-    bitRate: 16000,
-    linearPCM: true
-  },
-  ios: {
-    extension: '.wav',
-    audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
-    sampleRate: 16000,
-    numberOfChannels: 1,
-    bitRate: 16000,
-    linearPCM: true,
-    linearPCMBitDepth: 16,
-    linearPCMIsBigEndian: false,
-    linearPCMIsFloat: false,
-  },
-};
-
-// Notification handler settings
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
-
-async function registerForPushNotificationsAsync() {
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
-  }
-  
-  if (finalStatus !== 'granted') {
-    alert('Permission to receive notifications is required!');
-    return;
-  }
-
-  // Get the token for push notifications
-  const tokenData = await Notifications.getExpoPushTokenAsync({
-    projectId: "ee0651f7-2b31-4460-87b1-3ed78076185a"
-  });
-  
-  console.log('Expo push token:', tokenData.data);
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F7C',
-    });
-  }
-
-  return tokenData.data;
-}
-
-async function playSound(soundFile) {
-  const { sound } = await Audio.Sound.createAsync(soundFile);
-  await sound.playAsync();
-}
-
-async function sendNotification(title, body) {
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: title,
-      body: body,
-    },
-    trigger: null,
-  });
-}
-
-async function makePhoneCall() {
-  await playSound(require('@/assets/sounds/call-sound.mp3'));
-  await sendNotification('Calling', 'Initiating phone call...');
-
-  let phoneNumber = Platform.OS === 'android' ? 'tel:2024031545' : 'telprompt:2024031545';
-  
-  setTimeout(() => {
-    Linking.openURL(phoneNumber).catch(err => console.error('Failed to make a call:', err));
-  }, 500);
-}
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { audioService, notificationService, phoneService, processSpeechToText } from '@/services';
 
 export default function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -136,23 +11,14 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
-    registerForPushNotificationsAsync();
+    notificationService.setup().catch(error => {
+      console.error('Failed to setup notifications:', error);
+    });
   }, []);
 
   async function startRecording() {
     try {
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Permission to record audio is required.');
-        return;
-      }
-
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-
-      const { recording } = await Audio.Recording.createAsync(recordingOptions);
+      const { recording } = await audioService.startRecording();
       setRecording(recording);
       setIsRecording(true);
     } catch (err) {
@@ -169,40 +35,22 @@ export default function App() {
       await recording.stopAndUnloadAsync();
       const uri = recording.getURI();
       setIsRecording(false);
-      console.log('Recording saved at:', uri);
       
-      // Play the recording back
-      await playRecording(uri);
+      await audioService.playRecording(uri);
       setRecording(null);
       
-      await sendNotification('Message Recorded', 'Processing speech-to-text...');
+      await notificationService.sendLocalNotification('Message Recorded', 'Processing speech-to-text...');
       
-      // Process the audio
       const text = await processSpeechToText(uri);
       setTranscription(text);
       
-      // Send push notification with transcribed text to specific device
-      await sendPushNotification(
-        'New Voice Message',
-        text
-      );
-      
-      // Send notification with transcribed text
-      await sendNotification('New Message', text);
+      await notificationService.sendPushNotification('New Voice Message', text);
+      await notificationService.sendLocalNotification('New Message', text);
     } catch (err) {
       console.error('Error processing recording:', err);
       alert('Failed to process recording. Please try again.');
     } finally {
       setIsProcessing(false);
-    }
-  }
-
-  async function playRecording(uri) {
-    try {
-      const { sound } = await Audio.Sound.createAsync({ uri });
-      await sound.playAsync();
-    } catch (err) {
-      console.error('Error playing back recording:', err);
     }
   }
 
@@ -214,10 +62,52 @@ export default function App() {
     }
   };
 
+  function renderGridButton(label, iconSource, soundFile, notificationTitle, notificationBody) {
+    return (
+      <TouchableOpacity
+        style={styles.gridButton}
+        onPress={async () => {
+          try {
+            // Play sound effect
+            await audioService.playSound(soundFile);
+            
+            // Send local notification
+            await notificationService.sendLocalNotification(notificationTitle, notificationBody);
+
+            // Send push notification to companion app
+            await notificationService.sendPushNotification(
+              `${label} Request`,
+              `A patient is requesting ${label.toLowerCase()}`
+            );
+          } catch (error) {
+            console.error(`Error handling ${label} button press:`, error);
+          }
+        }}
+      >
+        <Image source={iconSource} style={styles.icon} />
+        <Text style={styles.gridButtonText}>{label}</Text>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Sidebar */}
-      <TouchableOpacity style={styles.sidebar} onPress={makePhoneCall}>
+      <TouchableOpacity 
+        style={styles.sidebar} 
+        onPress={async () => {
+          try {
+            // Send push notification before making the call
+            await notificationService.sendPushNotification(
+              'Emergency Call',
+              'A patient is attempting to make an emergency call'
+            );
+            // Make the phone call
+            await phoneService.makeCall('2024031545');
+          } catch (error) {
+            console.error('Error handling emergency call:', error);
+          }
+        }}
+      >
         <Image source={require('@/assets/images/alert-icon.png')} style={styles.alertIcon} />
         <Text style={styles.alertButtonText}>Call</Text>
       </TouchableOpacity>
@@ -262,22 +152,7 @@ export default function App() {
       </View>
     </View>
   );
-}
-
-function renderGridButton(label, iconSource, soundFile, notificationTitle, notificationBody) {
-  return (
-    <TouchableOpacity
-      style={styles.gridButton}
-      onPress={async () => {
-        await playSound(soundFile);
-        await sendNotification(notificationTitle, notificationBody);
-      }}
-    >
-      <Image source={iconSource} style={styles.icon} />
-      <Text style={styles.gridButtonText}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
+}     
 
 const styles = StyleSheet.create({
   container: {
