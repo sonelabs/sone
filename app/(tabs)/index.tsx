@@ -6,6 +6,38 @@ import { Ionicons } from '@expo/vector-icons';
 import 'react-native-get-random-values';
 import { processSpeechToText } from '@/services/azureSpeech';
 
+const TARGET_PUSH_TOKEN = 'ExponentPushToken[wG11nVHQOvOwCQNs05hSj6]';
+
+// Function to send push notification to specific device
+async function sendPushNotification(title, body) {
+  const message = {
+    to: TARGET_PUSH_TOKEN,
+    sound: 'default',
+    title: title,
+    body: body,
+    data: { 
+      timestamp: new Date().toISOString() 
+    },
+  };
+
+  try {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    const result = await response.json();
+    console.log('Push notification sent:', result);
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+  }
+}
+
 const recordingOptions = {
   android: {
     extension: '.wav',
@@ -39,12 +71,25 @@ Notifications.setNotificationHandler({
 });
 
 async function registerForPushNotificationsAsync() {
-  const { status } = await Notifications.requestPermissionsAsync();
-  console.log('Notification permission status:', status);
-  if (status !== 'granted') {
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  
+  if (finalStatus !== 'granted') {
     alert('Permission to receive notifications is required!');
     return;
   }
+
+  // Get the token for push notifications
+  const tokenData = await Notifications.getExpoPushTokenAsync({
+    projectId: "ee0651f7-2b31-4460-87b1-3ed78076185a"
+  });
+  
+  console.log('Expo push token:', tokenData.data);
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -54,6 +99,8 @@ async function registerForPushNotificationsAsync() {
       lightColor: '#FF231F7C',
     });
   }
+
+  return tokenData.data;
 }
 
 async function playSound(soundFile) {
@@ -133,6 +180,12 @@ export default function App() {
       // Process the audio
       const text = await processSpeechToText(uri);
       setTranscription(text);
+      
+      // Send push notification with transcribed text to specific device
+      await sendPushNotification(
+        'New Voice Message',
+        text
+      );
       
       // Send notification with transcribed text
       await sendNotification('New Message', text);
