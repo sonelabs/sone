@@ -18,7 +18,15 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.SONE.SONETabletApp"
+      "bundleIdentifier": "com.SONE.SONETabletApp",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch"
+        ],
+        "NSMicrophoneUsageDescription": "Used for secure voice messaging.",
+        "NSCameraUsageDescription": "We use the camera for eye-tracking software."
+      }
     },
     "android": {
       "package": "com.SONE.SONETabletApp",
@@ -33,6 +41,9 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      "expo-dev-client",
       "expo-router"
     ],
     "experiments": {

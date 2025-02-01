@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { audioService, notificationService, phoneService, processSpeechToText } from '@/services';
+import EyeTrackingCursor from '@/components/EyeTrackingCursor';
 
 export default function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -92,6 +93,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <EyeTrackingCursor /> {/* Render the eye tracking cursor as an overlay */}
       <TouchableOpacity 
         style={styles.sidebar} 
         onPress={async () => {
