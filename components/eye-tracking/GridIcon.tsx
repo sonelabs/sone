@@ -1,7 +1,7 @@
 // GridIcon.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import { TouchableOpacity, View, Text, Image, StyleSheet, LayoutChangeEvent } from 'react-native';
-import { useCursor } from '@/components/CursorContext'; // Make sure you have a CursorContext that provides { cursor, setCursor }
+import { useCursor } from '@/components/eye-tracking/CursorContext'; // Make sure you have a CursorContext that provides { cursor, setCursor }
 
 interface GridIconProps {
   label: string;

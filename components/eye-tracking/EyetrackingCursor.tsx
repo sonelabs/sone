@@ -1,7 +1,6 @@
-// EyeTrackingCursor.tsx
 import React, { useEffect } from 'react';
 import { Animated, StyleSheet, Platform } from 'react-native';
-import { useCursor } from '@/components/CursorContext';
+import { useCursor } from './CursorContext';
 import { NativeModules } from 'react-native';
 
 const { ARKitManager } = NativeModules;
@@ -11,6 +10,7 @@ export default function EyeTrackingCursor() {
   const [cursorX] = React.useState(new Animated.Value(100));
   const [cursorY] = React.useState(new Animated.Value(100));
 
+  // Update the global cursor position whenever the animated values change
   useEffect(() => {
     const idX = cursorX.addListener(({ value }) => {
       setCursor((prev) => ({ ...prev, x: value }));
@@ -24,11 +24,12 @@ export default function EyeTrackingCursor() {
     };
   }, [cursorX, cursorY, setCursor]);
 
+  // Start ARKit eye tracking and update the Animated values based on the gaze data
   useEffect(() => {
     if (Platform.OS === 'ios' && ARKitManager?.startEyeTracking) {
       ARKitManager.startEyeTracking((gazeData: any[]) => {
         const { x, y } = gazeData[0];
-        // Update Animated values based on ARKit gaze data.
+        // Map the gaze values to your screen's coordinate system; adjust scaling as needed
         Animated.timing(cursorX, {
           toValue: (x + 1) * 200,
           duration: 100,
@@ -53,6 +54,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     borderRadius: 15,
     position: 'absolute',
-    zIndex: 1000,
+    zIndex: 1000, // Ensures the cursor is rendered above other UI elements
   },
 });
