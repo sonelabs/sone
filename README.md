@@ -8,7 +8,7 @@ SONE is a React Native application that facilitates seamless communication for p
   <img src="https://github.com/user-attachments/assets/a9005a30-0437-4623-90d6-ba16b1007f2c" width="45%" />
 </p>
 
-The goal is to reduce reliance on manual checks and improve communication between patients and caregivers, particularly for those who are physically disabled or nonverbal.
+The goal is to reduce reliance on manual checks and improve communication between patients and caregivers, particularly for those who are physically disabled or nonspeaking.
 
 ## Features
 
