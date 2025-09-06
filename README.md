@@ -2,6 +2,8 @@
 ![sone](https://github.com/user-attachments/assets/c0abb1e7-2e92-48e9-acfa-660d8c9c7fd2)
 
 SONE is a React Native application that facilitates seamless communication for patients with limited mobility. This app allows patients to send notifications to nursing staff by selecting predefined options like "I need water" or "I'm in pain" using their eye movements, triggering push notifications on hospital staff’s mobile devices.
+![Uploading SONE_use.png…]()
+<img width="1505" height="844" alt="SONE_use_2" src="https://github.com/user-attachments/assets/a9005a30-0437-4623-90d6-ba16b1007f2c" />
 
 The goal is to reduce reliance on manual checks and improve communication between patients and caregivers, particularly for those who are physically disabled or nonverbal.
 
