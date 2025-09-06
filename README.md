@@ -1,5 +1,4 @@
 # SONE: Eye-Tracking Communication for Patients
-![sone](https://github.com/user-attachments/assets/c0abb1e7-2e92-48e9-acfa-660d8c9c7fd2)
 
 SONE is a React Native application that facilitates seamless communication for patients with limited mobility. This app allows patients to send notifications to nursing staff by selecting predefined options like "I need water" or "I'm in pain" using their eye movements, triggering push notifications on hospital staff’s mobile devices.
 
